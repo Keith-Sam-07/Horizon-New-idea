@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Horizon Consulting & Training</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<style>
+:root{
+  --bg:#f7f8fc;--surface:#fff;--ink:#0d1136;--ink2:#5b5f7e;
+  --indigo:#4338ca;--violet:#7c5cff;--blue:#2563eb;
+  --border:#e3e6f2;--deep:#0f1240;
+  --grad:linear-gradient(135deg,#4338ca,#7c5cff);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:auto}
+body{background:var(--bg);color:var(--ink);overflow-x:hidden;-webkit-font-smoothing:antialiased;font-family:'Helvetica Neue',Arial,sans-serif}
+
+/* ── CUSTOM SCROLLBAR ── */
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-thumb{background:var(--indigo)}
+
+/* ── PROGRESS ── */
+#prog{position:fixed;top:0;left:0;height:3px;width:0%;z-index:9999;background:var(--grad);transition:none}
+
+/* ── CURSOR ── */
+#cur,#cur-ring{position:fixed;border-radius:50%;pointer-events:none;z-index:99998;transform:translate(-50%,-50%);mix-blend-mode:difference}
+#cur{width:8px;height:8px;background:#fff}
+#cur-ring{width:38px;height:38px;border:1.5px solid #fff;transition:width .3s,height .3s,border-radius .3s}
+.cursor-hover #cur-ring{width:56px;height:56px}
+
+/* ── NOISE ── */
+.noise{position:fixed;inset:0;z-index:9996;pointer-events:none;opacity:.022}
+.noise svg{width:100%;height:100%}
+
+/* ── NAV ── */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:500;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:20px 56px;transition:padding .4s,background .4s,border-color .4s;
+}
+.nav.compact{padding:12px 56px;background:rgba(247,248,252,.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
+.nav-left{display:flex;align-items:center;gap:48px}
+.nav-logo{font-weight:700;font-size:15px;color:var(--ink);text-decoration:none;letter-spacing:-.01em}
+.nav-logo span{color:var(--indigo)}
+.nav-pill{position:relative;display:flex;gap:0;background:rgba(255,255,255,.6);border:1px solid var(--border);border-radius:24px;padding:4px;backdrop-filter:blur(8px)}
+.nav-pill-glider{position:absolute;top:4px;left:4px;height:calc(100% - 8px);border-radius:20px;background:var(--ink);transition:transform .3s cubic-bezier(.16,1,.3,1),width .3s cubic-bezier(.16,1,.3,1)}
+.nav-link{position:relative;z-index:1;font-size:11px;letter-spacing:.08em;text-decoration:none;padding:6px 16px;color:rgba(13,17,54,.55);transition:color .3s;font-family:monospace;text-transform:uppercase;white-space:nowrap;cursor:pointer}
+.nav-link.active{color:#fff}
+.nav-cta{font-size:11px;padding:9px 22px;border-radius:22px;border:none;cursor:pointer;font-family:monospace;letter-spacing:.08em;background:var(--grad);color:#fff;transition:opacity .25s}
+.nav-cta:hover{opacity:.85}
+
+/* ── HERO ── */
+.hero{min-height:100vh;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;padding:180px 56px 80px}
+.hero-grid{position:absolute;inset:0;opacity:.35}
+.hero-grid svg{width:100%;height:100%}
+.hero-glow{position:absolute;inset:0;pointer-events:none}
+.hero-glow::before{content:'';position:absolute;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(124,92,255,.22),transparent 70%);top:-180px;right:-100px;animation:floatA 8s ease-in-out infinite alternate}
+.hero-glow::after{content:'';position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(67,56,202,.16),transparent 70%);bottom:-80px;left:-60px;animation:floatB 10s ease-in-out infinite alternate}
+@keyframes floatA{0%{transform:translate(0,0) scale(1)}100%{transform:translate(30px,-40px) scale(1.08)}}
+@keyframes floatB{0%{transform:translate(0,0) scale(1)}100%{transform:translate(-20px,30px) scale(1.05)}}
+.hero-tag{font-size:11px;letter-spacing:.22em;color:var(--indigo);font-family:monospace;text-transform:uppercase;margin-bottom:24px;display:flex;align-items:center;gap:10px;opacity:0}
+.hero-tag::before{content:'';width:32px;height:1px;background:var(--indigo)}
+.hero-h1{font-size:clamp(52px,8.5vw,124px);line-height:.93;letter-spacing:-.03em;font-weight:400;color:var(--ink);position:relative;z-index:2}
+.hero-h1 .line{overflow:hidden;display:block}
+.hero-h1 .line-inner{display:block;transform:translateY(108%)}
+.hero-h1 em{font-style:normal;color:var(--indigo)}
+.hero-bottom{display:flex;justify-content:space-between;align-items:flex-end;margin-top:52px;position:relative;z-index:2}
+.hero-sub{font-size:15px;line-height:1.8;max-width:380px;color:var(--ink2)}
+.hero-right{display:flex;flex-direction:column;gap:14px;align-items:flex-end}
+.hero-stat-row{display:flex;gap:32px}
+.hero-stat{text-align:center}
+.hero-stat-n{font-size:28px;font-weight:300;color:var(--ink);letter-spacing:-.02em}
+.hero-stat-n em{font-style:normal;color:var(--indigo)}
+.hero-stat-l{font-size:10px;letter-spacing:.14em;color:var(--ink2);font-family:monospace;text-transform:uppercase;margin-top:2px}
+.scroll-ind{position:absolute;bottom:36px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px}
+.scroll-ind-line{width:1px;height:0;background:var(--indigo);opacity:.5}
+.scroll-ind-label{font-size:9px;letter-spacing:.2em;color:var(--ink2);font-family:monospace}
+
+/* ── TRUST STRIP ── */
+.trust-strip{display:flex;align-items:center;justify-content:center;gap:0;background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);overflow:hidden}
+.trust-item{display:flex;align-items:center;gap:8px;padding:18px 32px;font-size:12px;color:var(--ink2);border-right:1px solid var(--border);flex:1;justify-content:center}
+.trust-item:last-child{border-right:none}
+.trust-icon{width:16px;height:16px;background:var(--grad);border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.trust-icon svg{width:8px;height:8px;fill:#fff}
+
+/* ── MARQUEE ── */
+.marquee-wrap{overflow:hidden;padding:13px 0;background:var(--deep);border:none}
+.marquee-track{display:flex;white-space:nowrap;will-change:transform}
+.marquee-inner{display:flex;flex-shrink:0}
+.marquee-item{font-size:11px;letter-spacing:.2em;padding:0 28px;font-family:monospace;color:rgba(255,255,255,.3);text-transform:uppercase}
+.marquee-sep{color:var(--violet);opacity:.6;margin:0 4px}
+
+/* ── PINNED WORD ── */
+.pinned-section{height:380vh}
+.pinned-inner{height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(165deg,#0b0d2e,#1a1260 50%,#2c1d82);position:relative;overflow:hidden}
+.pinned-inner::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 50%,rgba(124,92,255,.18),transparent)}
+.pin-label{font-size:10px;letter-spacing:.3em;color:rgba(255,255,255,.3);font-family:monospace;text-transform:uppercase;margin-bottom:40px}
+.pin-stage{position:relative;height:1.25em;display:flex;align-items:center;justify-content:center;width:100%}
+.pin-word{position:absolute;font-size:clamp(52px,9.5vw,128px);font-weight:300;letter-spacing:-.03em;color:#fff;opacity:0;line-height:1}
+.pin-word em{font-style:normal;background:linear-gradient(90deg,#a89dff,#7fb6ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.pin-dots{display:flex;gap:8px;margin-top:52px}
+.pin-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.2);transition:all .4s}
+.pin-dot.on{background:#fff;width:20px;border-radius:4px}
+
+/* ── SECTION BASE ── */
+section{padding:120px 56px;position:relative}
+.s-eye{font-size:10px;letter-spacing:.24em;color:var(--indigo);font-family:monospace;text-transform:uppercase;display:block;margin-bottom:16px}
+.s-h2{font-size:clamp(32px,4vw,56px);font-weight:400;line-height:1.08;letter-spacing:-.02em;color:var(--ink)}
+.s-h2 strong{font-weight:600;color:var(--indigo)}
+.s-head{margin-bottom:72px;max-width:680px}
+.clip-wrap{overflow:hidden;display:block}
+.clip-in{display:block;transform:translateY(105%)}
+
+/* ── SERVICES ACCORDION ── */
+.services-section{background:var(--surface)}
+.accord-list{border-top:1px solid var(--border)}
+.accord-item{border-bottom:1px solid var(--border);overflow:hidden}
+.accord-head{display:flex;justify-content:space-between;align-items:center;padding:28px 0;cursor:pointer;user-select:none}
+.accord-num{font-size:10px;letter-spacing:.2em;color:var(--indigo);font-family:monospace;width:48px}
+.accord-title{font-size:18px;font-weight:400;color:var(--ink);flex:1;letter-spacing:-.01em}
+.accord-icon{width:28px;height:28px;border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;transition:transform .4s,background .3s,border-color .3s;flex-shrink:0}
+.accord-icon svg{width:10px;height:10px;fill:var(--ink);transition:fill .3s}
+.accord-item.open .accord-icon{transform:rotate(45deg);background:var(--indigo);border-color:var(--indigo)}
+.accord-item.open .accord-icon svg{fill:#fff}
+.accord-body{height:0;overflow:hidden;transition:height .5s cubic-bezier(.16,1,.3,1)}
+.accord-body-inner{padding:0 0 32px 48px;font-size:14px;line-height:1.75;color:var(--ink2);max-width:600px}
+
+/* ── VALUES ── */
+.values-section{background:var(--bg)}
+.val-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.val-card{padding:44px 36px;background:var(--surface);border:1px solid var(--border);border-radius:10px;position:relative;overflow:hidden;transition:border-color .4s,box-shadow .4s}
+.val-card::after{content:'';position:absolute;inset:0;background:var(--grad);opacity:0;transition:opacity .5s;z-index:0}
+.val-card:hover{border-color:var(--indigo);box-shadow:0 20px 60px rgba(67,56,202,.18)}
+.val-card:hover::after{opacity:1}
+.val-card:hover .val-n,.val-card:hover .val-t,.val-card:hover .val-d{position:relative;z-index:1;color:#fff}
+.val-n{font-size:10px;letter-spacing:.2em;font-family:monospace;color:var(--indigo);margin-bottom:28px;display:block;transition:color .4s}
+.val-t{font-size:17px;font-weight:500;color:var(--ink);margin-bottom:10px;transition:color .4s;letter-spacing:-.01em}
+.val-d{font-size:13px;color:var(--ink2);line-height:1.75;transition:color .4s}
+
+/* ── HORIZONTAL CASE STUDIES ── */
+.cases-section{background:var(--deep);overflow:hidden;padding:120px 0}
+.cases-inner{padding:0 56px}
+.cases-track-wrap{overflow:visible;margin-top:64px}
+.cases-track{display:flex;gap:24px;will-change:transform}
+.case-card{min-width:380px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:44px 36px;flex-shrink:0}
+.case-tag{font-size:10px;letter-spacing:.2em;color:var(--violet);font-family:monospace;text-transform:uppercase;margin-bottom:20px;display:block}
+.case-h{font-size:22px;font-weight:400;color:#fff;margin-bottom:14px;letter-spacing:-.01em;line-height:1.2}
+.case-d{font-size:13px;color:rgba(255,255,255,.45);line-height:1.7}
+.case-result{margin-top:28px;font-size:32px;font-weight:300;color:#fff;letter-spacing:-.02em}
+.case-result em{font-style:normal;background:linear-gradient(90deg,#a89dff,#7fb6ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.case-result-l{font-size:11px;letter-spacing:.14em;color:rgba(255,255,255,.3);font-family:monospace;text-transform:uppercase;margin-top:4px}
+
+/* ── STATS ── */
+.stats-section{background:var(--deep)}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr)}
+.stat-cell{padding:60px 48px;border-right:1px solid rgba(255,255,255,.07)}
+.stat-cell:last-child{border-right:none}
+.stat-n{font-size:clamp(56px,7vw,88px);font-weight:200;letter-spacing:-.04em;line-height:1;display:flex;align-items:baseline;gap:4px;color:#fff}
+.stat-n span{background:linear-gradient(90deg,#fff 0%,#a89dff 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.stat-suf{font-size:.55em;color:rgba(255,255,255,.5);font-weight:300}
+.stat-l{font-size:11px;letter-spacing:.18em;font-family:monospace;margin-top:12px;display:block;text-transform:uppercase;color:rgba(255,255,255,.3)}
+.stats-section .s-eye{color:rgba(168,157,255,.7)}
+.stats-section .s-h2{color:#fff}
+
+/* ── TIMELINE ── */
+.timeline-section{background:var(--bg);padding:120px 56px}
+.timeline-track{position:relative;margin-top:72px}
+.timeline-line{position:absolute;left:12px;top:0;bottom:0;width:1px;background:linear-gradient(to bottom,var(--indigo),var(--violet));opacity:.25}
+.tl-item{display:flex;gap:40px;align-items:flex-start;margin-bottom:64px;position:relative}
+.tl-dot-wrap{width:24px;flex-shrink:0;padding-top:5px}
+.tl-dot{width:24px;height:24px;border-radius:50%;background:var(--surface);border:2px solid var(--border);position:relative;z-index:1;transition:border-color .4s,background .4s}
+.tl-dot.active{border-color:var(--indigo);background:var(--indigo)}
+.tl-year{font-size:11px;letter-spacing:.18em;color:var(--indigo);font-family:monospace;margin-bottom:8px;display:block}
+.tl-title{font-size:18px;font-weight:500;color:var(--ink);margin-bottom:8px;letter-spacing:-.01em}
+.tl-desc{font-size:13px;color:var(--ink2);line-height:1.7}
+
+/* ── TESTIMONIALS ── */
+.testi-section{background:var(--surface);padding:120px 56px;overflow:hidden}
+.testi-track{display:flex;transition:transform .7s cubic-bezier(.16,1,.3,1)}
+.testi-card{min-width:100%;padding:0 80px;text-align:center}
+.testi-stars{color:var(--violet);font-size:18px;letter-spacing:4px;margin-bottom:28px}
+.testi-q{font-size:clamp(18px,2.5vw,28px);font-weight:400;color:var(--ink);line-height:1.45;font-family:'Georgia',serif;max-width:760px;margin:0 auto 32px}
+.testi-q em{font-style:italic;color:var(--indigo)}
+.testi-author{font-size:12px;letter-spacing:.12em;color:var(--ink2);font-family:monospace;text-transform:uppercase}
+.testi-controls{display:flex;justify-content:center;gap:8px;margin-top:44px}
+.testi-dot{width:6px;height:6px;border-radius:50%;background:var(--border);cursor:pointer;transition:all .3s}
+.testi-dot.on{background:var(--indigo);width:20px;border-radius:4px}
+.testi-arrows{display:flex;gap:10px;justify-content:center;margin-top:20px}
+.testi-arr{width:40px;height:40px;border:1px solid var(--border);border-radius:50%;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .25s}
+.testi-arr:hover{border-color:var(--indigo);background:var(--indigo)}
+.testi-arr:hover svg{fill:#fff}
+.testi-arr svg{width:12px;height:12px;fill:var(--ink);transition:fill .25s}
+
+/* ── TEAM ── */
+.team-section{background:var(--bg);padding:120px 56px}
+.team-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.team-card{padding:36px 28px;background:var(--surface);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:box-shadow .4s;will-change:transform}
+.team-card:hover{box-shadow:0 24px 60px rgba(67,56,202,.22)}
+.team-av{width:56px;height:56px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#fff;margin-bottom:22px}
+.team-name{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px;letter-spacing:-.01em}
+.team-role{font-size:11px;letter-spacing:.08em;font-family:monospace;color:var(--indigo);text-transform:uppercase}
+.team-q{font-size:12px;color:var(--ink2);line-height:1.6;margin-top:14px;opacity:0;transform:translateY(6px);transition:opacity .4s,transform .4s}
+.team-card:hover .team-q{opacity:1;transform:translateY(0)}
+
+/* ── MAG BTN ── */
+.mag-btn{display:inline-block;cursor:pointer;user-select:none;text-decoration:none}
+.mag-btn-inner{display:block;padding:15px 38px;font-size:12px;font-weight:600;letter-spacing:.12em;font-family:monospace;border:1.5px solid;transition:background .3s,color .3s,border-color .3s}
+.btn-light .mag-btn-inner{color:var(--ink);border-color:rgba(67,56,202,.5);background:transparent}
+.btn-light .mag-btn-inner:hover{background:var(--indigo);color:#fff;border-color:var(--indigo)}
+.btn-dark .mag-btn-inner{color:#fff;border-color:rgba(255,255,255,.35);background:transparent}
+.btn-dark .mag-btn-inner:hover{background:#fff;color:var(--deep);border-color:#fff}
+
+/* ── CTA ── */
+.cta-section{padding:160px 56px;text-align:center;position:relative;overflow:hidden;background:linear-gradient(165deg,#0b0d2e,#1a1260 50%,#2c1d82)}
+.cta-canvas{position:absolute;inset:0;opacity:.5}
+.cta-h2{font-size:clamp(40px,7vw,96px);font-weight:300;line-height:.95;letter-spacing:-.03em;color:#fff;margin-bottom:32px;position:relative;z-index:2}
+.cta-h2 .line{overflow:hidden;display:block}
+.cta-h2 .line-inner{display:block;transform:translateY(105%)}
+.cta-h2 em{font-style:normal;background:linear-gradient(90deg,#a89dff,#7fb6ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.cta-sub{font-size:15px;color:rgba(255,255,255,.5);margin-bottom:48px;position:relative;z-index:2}
+.cta-actions{display:flex;gap:16px;justify-content:center;position:relative;z-index:2}
+
+/* ── FOOTER ── */
+footer{background:var(--deep);padding:40px 56px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;border-top:1px solid rgba(255,255,255,.06)}
+.f-logo{font-size:14px;font-weight:700;color:#fff;letter-spacing:-.01em}
+.f-logo span{color:var(--violet)}
+.f-links{display:flex;gap:28px}
+.f-links a{font-size:11px;letter-spacing:.1em;color:rgba(255,255,255,.3);text-decoration:none;font-family:monospace;text-transform:uppercase;transition:color .2s}
+.f-links a:hover{color:#fff}
+.f-right{text-align:right;font-size:11px;color:rgba(255,255,255,.2);font-family:monospace}
+</style>
+</head>
+<body>
+<div class="noise" aria-hidden="true">
+  <svg xmlns="http://www.w3.org/2000/svg" width="300" height="300">
+    <filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".65" numOctaves="3" stitchTiles="stitch"/></filter>
+    <rect width="300" height="300" filter="url(#n)"/>
+  </svg>
+</div>
+<div id="cur"></div>
+<div id="cur-ring"></div>
+<div id="prog"></div>
+
+<!-- NAV -->
+<nav class="nav" id="nav">
+  <div class="nav-left">
+    <a class="nav-logo" href="#">Horizon <span>·</span> CT</a>
+    <div class="nav-pill" id="nav-pill">
+      <div class="nav-pill-glider" id="pill-glider"></div>
+      <span class="nav-link active" data-section="hero">Home</span>
+      <span class="nav-link" data-section="services">Services</span>
+      <span class="nav-link" data-section="impact">Impact</span>
+      <span class="nav-link" data-section="team">People</span>
+      <span class="nav-link" data-section="contact">Connect</span>
+    </div>
+  </div>
+  <button class="nav-cta" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Get in touch</button>
+</nav>
+
+<!-- Everything below is scroll content. Skewed as a group so the
+     velocity-skew effect never touches <body> itself — a transform
+     on body would hijack position:fixed for nav/cursor/prog AND
+     break GSAP's pin (see #page-wrap skew target in the script). -->
+<div id="page-wrap">
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-grid">
+    <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+      <defs>
+        <pattern id="grid" width="56" height="56" patternUnits="userSpaceOnUse">
+          <path d="M 56 0 L 0 0 0 56" fill="none" stroke="#4338ca" stroke-width=".5" opacity=".4"/>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#grid)"/>
+      <circle cx="50%" cy="30%" r="200" fill="none" stroke="#7c5cff" stroke-width=".5" opacity=".25"/>
+      <circle cx="50%" cy="30%" r="320" fill="none" stroke="#4338ca" stroke-width=".3" opacity=".15"/>
+      <circle cx="50%" cy="30%" r="440" fill="none" stroke="#2563eb" stroke-width=".2" opacity=".1"/>
+    </svg>
+  </div>
+  <div class="hero-glow"></div>
+  <div class="hero-tag" id="hero-tag">Consulting & Training excellence since 2012</div>
+  <h1 class="hero-h1" id="hero-h1">
+    <span class="line"><span class="line-inner">The team that</span></span>
+    <span class="line"><span class="line-inner"><em>transforms</em></span></span>
+    <span class="line"><span class="line-inner">ambition.</span></span>
+  </h1>
+  <div class="hero-bottom">
+    <p class="hero-sub" id="hero-sub">Horizon Consulting & Training helps organizations close the gap between where they are and where they need to be — with precision, trust, and relentless focus.</p>
+    <div class="hero-right" id="hero-right">
+      <div class="hero-stat-row">
+        <div class="hero-stat"><div class="hero-stat-n"><em>94</em>%</div><div class="hero-stat-l">Goal rate</div></div>
+        <div class="hero-stat"><div class="hero-stat-n"><em>120</em>+</div><div class="hero-stat-l">Orgs trained</div></div>
+        <div class="hero-stat"><div class="hero-stat-n"><em>12</em></div><div class="hero-stat-l">Years</div></div>
+      </div>
+      <button class="mag-btn btn-light" id="hero-mag"><span class="mag-btn-inner">Discover our work ↓</span></button>
+    </div>
+  </div>
+  <div class="scroll-ind" id="scroll-ind">
+    <span class="scroll-ind-label">SCROLL</span>
+    <div class="scroll-ind-line" id="scroll-line"></div>
+  </div>
+</section>
+
+<!-- TRUST STRIP -->
+<div class="trust-strip">
+  <div class="trust-item"><div class="trust-icon"><svg viewBox="0 0 10 10"><path d="M5 1l1.2 2.6L9 4.1 7 6l.5 2.9L5 7.5l-2.5 1.4L3 6 1 4.1l2.8-.5z"/></svg></div>ISO 9001 Certified Process</div>
+  <div class="trust-item"><div class="trust-icon"><svg viewBox="0 0 10 10"><path d="M5 1a4 4 0 100 8A4 4 0 005 1zm.5 6H4.5V4.5h1V7zm0-3.5H4.5V2.5h1V3.5z"/></svg></div>120+ Organizations Served</div>
+  <div class="trust-item"><div class="trust-icon"><svg viewBox="0 0 10 10"><path d="M1 5L3.5 7.5 9 2"/></svg></div>94% Client Retention Rate</div>
+  <div class="trust-item"><div class="trust-icon"><svg viewBox="0 0 10 10"><path d="M5 1v4l3 1.5"/></svg></div>12 Years of Excellence</div>
+</div>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track" id="mtrack">
+    <div class="marquee-inner" id="mi-a"></div>
+    <div class="marquee-inner" id="mi-b"></div>
+  </div>
+</div>
+
+<!-- PINNED WORDS -->
+<div class="pinned-section" id="pinned-sec">
+  <div class="pinned-inner" id="pinned-inner">
+    <span class="pin-label">What drives us</span>
+    <div class="pin-stage">
+      <span class="pin-word" id="pw1">Clarity.</span>
+      <span class="pin-word" id="pw2">Courage.</span>
+      <span class="pin-word" id="pw3"><em>Momentum.</em></span>
+      <span class="pin-word" id="pw4">Results.</span>
+    </div>
+    <div class="pin-dots">
+      <div class="pin-dot" id="pd0"></div>
+      <div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div>
+      <div class="pin-dot" id="pd3"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SERVICES -->
+<section class="services-section" id="services">
+  <div class="s-head">
+    <span class="s-eye clip-wrap"><span class="clip-in" id="sv-ey">What we do</span></span>
+    <h2 class="s-h2" id="sv-h2">Services built for <strong>lasting impact</strong></h2>
+  </div>
+  <div class="accord-list" id="accord-list">
+    <div class="accord-item open" data-idx="0">
+      <div class="accord-head">
+        <span class="accord-num">01</span>
+        <span class="accord-title">Leadership Development</span>
+        <div class="accord-icon"><svg viewBox="0 0 10 10"><path d="M5 1v8M1 5h8"/></svg></div>
+      </div>
+      <div class="accord-body"><div class="accord-body-inner">We build leaders who inspire, not just manage. Our programmes combine behavioral science, real-world simulation, and ongoing coaching to develop executives and emerging leaders who drive measurable change across their organisations.</div></div>
+    </div>
+    <div class="accord-item" data-idx="1">
+      <div class="accord-head">
+        <span class="accord-num">02</span>
+        <span class="accord-title">Organizational Strategy</span>
+        <div class="accord-icon"><svg viewBox="0 0 10 10"><path d="M5 1v8M1 5h8"/></svg></div>
+      </div>
+      <div class="accord-body"><div class="accord-body-inner">From vision to execution — we help leadership teams align on where they're going, why it matters, and exactly how they'll get there. Clear strategy, clear accountability, clear momentum.</div></div>
+    </div>
+    <div class="accord-item" data-idx="2">
+      <div class="accord-head">
+        <span class="accord-num">03</span>
+        <span class="accord-title">Performance Coaching</span>
+        <div class="accord-icon"><svg viewBox="0 0 10 10"><path d="M5 1v8M1 5h8"/></svg></div>
+      </div>
+      <div class="accord-body"><div class="accord-body-inner">1-on-1 and team coaching that breaks through performance plateaus. We use a proven framework that addresses mindset, skillset, and environment — the three root causes of underperformance.</div></div>
+    </div>
+    <div class="accord-item" data-idx="3">
+      <div class="accord-head">
+        <span class="accord-num">04</span>
+        <span class="accord-title">Culture Transformation</span>
+        <div class="accord-icon"><svg viewBox="0 0 10 10"><path d="M5 1v8M1 5h8"/></svg></div>
+      </div>
+      <div class="accord-body"><div class="accord-body-inner">Culture isn't a poster on the wall — it's every decision made when no one is watching. We help organizations define, embed, and measure the culture that will carry them to their next level.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- VALUES -->
+<section class="values-section" id="values">
+  <div class="s-head">
+    <span class="s-eye clip-wrap"><span class="clip-in" id="vl-ey">Our principles</span></span>
+    <h2 class="s-h2" id="vl-h2">What we <strong>stand for</strong></h2>
+  </div>
+  <div class="val-grid" id="val-grid">
+    <div class="val-card"><span class="val-n">01</span><div class="val-t">Relentless drive</div><p class="val-d">Comfort is the enemy of progress. We push past it — every single time.</p></div>
+    <div class="val-card"><span class="val-n">02</span><div class="val-t">United purpose</div><p class="val-d">Individual brilliance multiplied by collective commitment always wins.</p></div>
+    <div class="val-card"><span class="val-n">03</span><div class="val-t">Radical honesty</div><p class="val-d">The truth delivered with care is the fastest path to real progress.</p></div>
+  </div>
+</section>
+
+<!-- CASE STUDIES (Horizontal) -->
+<section class="cases-section" id="cases">
+  <div class="cases-inner">
+    <div class="s-head">
+      <span class="s-eye" style="color:rgba(168,157,255,.7)">Client results</span>
+      <h2 class="s-h2" style="color:#fff">Work that <strong style="color:#a89dff">speaks</strong></h2>
+    </div>
+    <div class="cases-track-wrap" id="cases-wrap">
+      <div class="cases-track" id="cases-track">
+        <div class="case-card"><span class="case-tag">Leadership</span><h3 class="case-h">Rebuilding executive alignment at a 2,000-person firm</h3><p class="case-d">The leadership team was pulling in four directions. Six months later, one vision, one language, one team.</p><div class="case-result"><em>3×</em></div><div class="case-result-l">Faster decision making</div></div>
+        <div class="case-card"><span class="case-tag">Culture</span><h3 class="case-h">Turning a toxic culture into a destination workplace</h3><p class="case-d">Employee satisfaction was at 41%. We designed and embedded a new operating culture from the ground up.</p><div class="case-result"><em>+54pts</em></div><div class="case-result-l">eNPS improvement</div></div>
+        <div class="case-card"><span class="case-tag">Strategy</span><h3 class="case-h">From stagnation to a clear 5-year growth roadmap</h3><p class="case-d">A mid-market firm with no shared direction. We ran a 90-day strategy sprint that aligned 12 departments.</p><div class="case-result"><em>94%</em></div><div class="case-result-l">Goal attainment year one</div></div>
+        <div class="case-card"><span class="case-tag">Coaching</span><h3 class="case-h">Scaling a high-growth team without losing the culture</h3><p class="case-d">Fast growth was breaking things. We coached 40 managers through the hardest phase of scaling their careers.</p><div class="case-result"><em>0%</em></div><div class="case-result-l">Leadership attrition post-programme</div></div>
+        <div class="case-card"><span class="case-tag">Training</span><h3 class="case-h">Upskilling 800 frontline managers in 90 days</h3><p class="case-d">A global rollout across 12 countries. Blended digital and live delivery. Measurable behaviour change in 8 weeks.</p><div class="case-result"><em>8 wks</em></div><div class="case-result-l">To measurable behaviour change</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="stats-section" id="impact">
+  <div class="s-head">
+    <span class="s-eye clip-wrap"><span class="clip-in" id="st-ey">By the numbers</span></span>
+    <h2 class="s-h2" id="st-h2">Results that <strong>speak</strong></h2>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-cell"><div class="stat-n"><span id="sn0">0</span><span class="stat-suf">%</span></div><span class="stat-l">Goal attainment rate</span></div>
+    <div class="stat-cell"><div class="stat-n"><span id="sn1">0</span><span class="stat-suf">+</span></div><span class="stat-l">Organizations served</span></div>
+    <div class="stat-cell"><div class="stat-n"><span id="sn2">0</span><span class="stat-suf"> yr</span></div><span class="stat-l">Years of excellence</span></div>
+  </div>
+</section>
+
+<!-- TIMELINE -->
+<section class="timeline-section" id="timeline">
+  <div class="s-head">
+    <span class="s-eye clip-wrap"><span class="clip-in" id="tl-ey">Our story</span></span>
+    <h2 class="s-h2" id="tl-h2">A decade of <strong>building</strong></h2>
+  </div>
+  <div class="timeline-track">
+    <div class="timeline-line"></div>
+    <div class="tl-item"><div class="tl-dot-wrap"><div class="tl-dot"></div></div><div><span class="tl-year">2012</span><div class="tl-title">Founded with a single belief</div><p class="tl-desc">Horizon was founded on the conviction that great organisations are built by great people — and great people need great support.</p></div></div>
+    <div class="tl-item"><div class="tl-dot-wrap"><div class="tl-dot"></div></div><div><span class="tl-year">2015</span><div class="tl-title">First enterprise partnership</div><p class="tl-desc">Landed our first Fortune 500 engagement — a 12-month leadership transformation for 400 senior managers.</p></div></div>
+    <div class="tl-item"><div class="tl-dot-wrap"><div class="tl-dot"></div></div><div><span class="tl-year">2018</span><div class="tl-title">Expanded to 6 countries</div><p class="tl-desc">Opened delivery capability across the Middle East, Europe, and Southeast Asia, serving clients in their own context.</p></div></div>
+    <div class="tl-item"><div class="tl-dot-wrap"><div class="tl-dot"></div></div><div><span class="tl-year">2021</span><div class="tl-title">Digital learning platform launch</div><p class="tl-desc">Built and launched our proprietary blended-learning platform, enabling 10× the throughput of our traditional delivery model.</p></div></div>
+    <div class="tl-item"><div class="tl-dot-wrap"><div class="tl-dot"></div></div><div><span class="tl-year">2024</span><div class="tl-title">120th organisation milestone</div><p class="tl-desc">Crossed the milestone of 120 organisations transformed — from startups to government ministries across 14 countries.</p></div></div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testi-section" id="testimonials">
+  <div style="text-align:center;margin-bottom:64px">
+    <span class="s-eye" style="display:block;text-align:center">What clients say</span>
+    <h2 class="s-h2" style="text-align:center;max-width:500px;margin:0 auto">Trusted by <strong>leaders</strong> who demand results</h2>
+  </div>
+  <div style="overflow:hidden" id="testi-outer">
+    <div class="testi-track" id="testi-track">
+      <div class="testi-card"><div class="testi-stars">★★★★★</div><p class="testi-q">"Horizon didn't just train our team — they <em>changed how we think</em>. The ROI was visible within 90 days."</p><span class="testi-author">CEO, Regional Manufacturing Group</span></div>
+      <div class="testi-card"><div class="testi-stars">★★★★★</div><p class="testi-q">"The most <em>rigorous and human</em> leadership programme I've experienced in 20 years of executive development."</p><span class="testi-author">CHRO, Global Financial Services Firm</span></div>
+      <div class="testi-card"><div class="testi-stars">★★★★★</div><p class="testi-q">"Three months in, our executive team had <em>a shared language, a shared direction</em>, and for the first time — shared trust."</p><span class="testi-author">Managing Director, Tech Scale-up</span></div>
+    </div>
+  </div>
+  <div class="testi-controls" id="testi-dots">
+    <div class="testi-dot on" data-i="0"></div>
+    <div class="testi-dot" data-i="1"></div>
+    <div class="testi-dot" data-i="2"></div>
+  </div>
+  <div class="testi-arrows">
+    <button class="testi-arr" id="t-prev"><svg viewBox="0 0 12 12"><path d="M8 2L4 6l4 4"/></svg></button>
+    <button class="testi-arr" id="t-next"><svg viewBox="0 0 12 12"><path d="M4 2l4 4-4 4"/></svg></button>
+  </div>
+</section>
+
+<!-- TEAM -->
+<section class="team-section" id="team">
+  <div class="s-head">
+    <span class="s-eye clip-wrap"><span class="clip-in" id="tm-ey">The people</span></span>
+    <h2 class="s-h2" id="tm-h2">Who <strong>we are</strong></h2>
+  </div>
+  <div class="team-grid" id="team-grid">
+    <div class="team-card" data-tilt><div class="team-av">JR</div><div class="team-name">James Rivera</div><div class="team-role">Managing Director</div><p class="team-q">"The best leaders make everyone around them better."</p></div>
+    <div class="team-card" data-tilt><div class="team-av">SM</div><div class="team-name">Sara Mehta</div><div class="team-role">Head of Strategy</div><p class="team-q">"Clarity of vision is the foundation of every win."</p></div>
+    <div class="team-card" data-tilt><div class="team-av">KL</div><div class="team-name">Kai Larsson</div><div class="team-role">Lead Coach</div><p class="team-q">"Discipline is just consistency made into a habit."</p></div>
+    <div class="team-card" data-tilt><div class="team-av">PN</div><div class="team-name">Priya Nair</div><div class="team-role">Growth Analyst</div><p class="team-q">"Data shows what happened. Curiosity shows why."</p></div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="contact">
+  <canvas class="cta-canvas" id="cta-canvas"></canvas>
+  <h2 class="cta-h2" id="cta-h2">
+    <span class="line"><span class="line-inner">Ready to move</span></span>
+    <span class="line"><span class="line-inner"><em>forward?</em></span></span>
+  </h2>
+  <p class="cta-sub" id="cta-sub">Let's start a conversation about where your organisation is heading.</p>
+  <div class="cta-actions">
+    <button class="mag-btn btn-dark" id="cta-mag1"><span class="mag-btn-inner">Book a consultation ↗</span></button>
+    <button class="mag-btn btn-dark" id="cta-mag2"><span class="mag-btn-inner">View our work</span></button>
+  </div>
+</section>
+
+<footer>
+  <div class="f-logo">Horizon <span>Consulting & Training</span></div>
+  <div class="f-links">
+    <a href="#">Services</a><a href="#">About</a><a href="#">Case Studies</a><a href="#">Contact</a>
+  </div>
+  <div class="f-right">© 2026 — All rights reserved</div>
+</footer>
+
+</div><!-- /#page-wrap -->
+
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+/* ══ LERP SCROLL ══ */
+let tY=0,cY=0;
+if(window.innerWidth>768)(function l(){tY=window.scrollY;cY+=(tY-cY)*.095;ScrollTrigger.update();requestAnimationFrame(l)})();
+
+/* ══ PROGRESS ══ */
+window.addEventListener('scroll',()=>{
+  document.getElementById('prog').style.width=(window.scrollY/(document.body.scrollHeight-window.innerHeight)*100)+'%';
+});
+
+/* ══ SCROLL VELOCITY SKEW ══ */
+let lastY=0,vel=0;
+window.addEventListener('scroll',()=>{vel=window.scrollY-lastY;lastY=window.scrollY});
+(function skewLoop(){
+  gsap.to('#page-wrap',{skewY:vel*-0.012,ease:'power3.out',duration:.4,overwrite:true});
+  requestAnimationFrame(skewLoop);
+})();
+
+/* ══ CURSOR ══ */
+const cur=document.getElementById('cur'),ring=document.getElementById('cur-ring');
+let mx=window.innerWidth/2,my=window.innerHeight/2,rx=mx,ry=my;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY});
+(function cl(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;cur.style.left=mx+'px';cur.style.top=my+'px';ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(cl)})();
+document.querySelectorAll('a,button,.mag-btn,.team-card').forEach(el=>{
+  el.addEventListener('mouseenter',()=>document.body.classList.add('cursor-hover'));
+  el.addEventListener('mouseleave',()=>document.body.classList.remove('cursor-hover'));
+});
+
+/* ══ NAV ══ */
+const nav=document.getElementById('nav');
+window.addEventListener('scroll',()=>nav.classList.toggle('compact',window.scrollY>80));
+
+/* ══ NAV PILL GLIDER ══ */
+const links=document.querySelectorAll('.nav-link');
+const glider=document.getElementById('pill-glider');
+function moveGlider(el){
+  const pill=document.getElementById('nav-pill').getBoundingClientRect();
+  const r=el.getBoundingClientRect();
+  glider.style.width=r.width+'px';
+  glider.style.transform=`translateX(${r.left-pill.left-4}px)`;
+}
+links.forEach(l=>{
+  l.addEventListener('click',()=>{
+    links.forEach(x=>x.classList.remove('active'));
+    l.classList.add('active');moveGlider(l);
+    const id=l.dataset.section;
+    if(id)document.getElementById(id)?.scrollIntoView({behavior:'smooth'});
+  });
+});
+setTimeout(()=>moveGlider(document.querySelector('.nav-link.active')),100);
+
+// auto-highlight on scroll
+const secs=['hero','services','impact','team','contact'];
+window.addEventListener('scroll',()=>{
+  let cur_id='hero';
+  secs.forEach(id=>{const el=document.getElementById(id);if(el&&el.getBoundingClientRect().top<window.innerHeight*.5)cur_id=id});
+  links.forEach(l=>{
+    const on=l.dataset.section===cur_id;
+    l.classList.toggle('active',on);
+    if(on)moveGlider(l);
+  });
+});
+
+/* ══ MARQUEE ══ */
+const MITEMS=['High performance','Radical honesty','Relentless growth','United purpose','Own the outcome','Deep focus','Culture first','Lifelong learning'];
+function buildMarq(){
+  const h=MITEMS.map(t=>`<span class="marquee-item">${t}<span class="marquee-sep">·</span></span>`).join('');
+  document.getElementById('mi-a').innerHTML=h;
+  document.getElementById('mi-b').innerHTML=h;
+}
+buildMarq();
+const mtrack=document.getElementById('mtrack');
+const mw=()=>document.getElementById('mi-a').offsetWidth;
+setTimeout(()=>{
+  gsap.to(mtrack,{x:-mw(),duration:20,ease:'none',repeat:-1,modifiers:{x:gsap.utils.unitize(v=>parseFloat(v)%mw())}});
+},100);
+
+/* ══ MAGNETIC BUTTONS ══ */
+document.querySelectorAll('.mag-btn').forEach(btn=>{
+  btn.addEventListener('mousemove',e=>{
+    const r=btn.getBoundingClientRect();
+    const x=e.clientX-r.left-r.width/2,y=e.clientY-r.top-r.height/2;
+    gsap.to(btn,{x:x*.35,y:y*.35,duration:.5,ease:'power2.out'});
+    gsap.to(btn.querySelector('.mag-btn-inner'),{x:x*.15,y:y*.15,duration:.5,ease:'power2.out'});
+  });
+  btn.addEventListener('mouseleave',()=>{
+    gsap.to(btn,{x:0,y:0,duration:.7,ease:'elastic.out(1,.5)'});
+    gsap.to(btn.querySelector('.mag-btn-inner'),{x:0,y:0,duration:.7,ease:'elastic.out(1,.5)'});
+  });
+});
+
+/* ══ 3D TILT ══ */
+document.querySelectorAll('[data-tilt]').forEach(c=>{
+  c.addEventListener('mousemove',e=>{
+    const r=c.getBoundingClientRect();
+    const x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;
+    gsap.to(c,{rotationY:x*18,rotationX:-y*18,scale:1.04,y:-6,transformPerspective:700,duration:.4,ease:'power2.out'});
+  });
+  c.addEventListener('mouseleave',()=>gsap.to(c,{rotationY:0,rotationX:0,scale:1,y:0,duration:.6,ease:'elastic.out(1,.5)'}));
+});
+
+/* ══ PINNED WORDS ══ */
+const pwords=['#pw1','#pw2','#pw3','#pw4'];
+gsap.set(pwords,{opacity:0,y:24,scale:.92});
+const ptl=gsap.timeline({scrollTrigger:{trigger:'#pinned-sec',start:'top top',end:'bottom bottom',pin:'#pinned-inner',pinType:'transform',anticipatePin:1,scrub:.6,
+  onUpdate:self=>{const i=Math.min(3,Math.floor(self.progress*4));document.querySelectorAll('.pin-dot').forEach((d,j)=>{d.classList.toggle('on',i===j)})}
+}});
+pwords.forEach(id=>{ptl.to(id,{opacity:1,y:0,scale:1,duration:.22,ease:'power2.out'}).to(id,{opacity:0,y:-24,scale:1.04,duration:.18,ease:'power2.in'},'+=.18')});
+
+/* ══ ACCORDION ══ */
+function setAccord(el,open){
+  const body=el.querySelector('.accord-body');
+  const inner=el.querySelector('.accord-body-inner');
+  el.classList.toggle('open',open);
+  if(open){body.style.height=inner.offsetHeight+'px'}
+  else{body.style.height='0'}
+}
+document.querySelectorAll('.accord-item').forEach(item=>{
+  setAccord(item,item.classList.contains('open'));
+  item.querySelector('.accord-head').addEventListener('click',()=>{
+    const isOpen=item.classList.contains('open');
+    document.querySelectorAll('.accord-item').forEach(i=>setAccord(i,false));
+    if(!isOpen)setAccord(item,true);
+  });
+});
+
+/* ══ HORIZONTAL CASE STUDIES ══ */
+setTimeout(()=>{
+  const track=document.getElementById('cases-track');
+  const totalDrag=track.scrollWidth-document.getElementById('cases-wrap').offsetWidth;
+  gsap.to(track,{x:-totalDrag,ease:'none',scrollTrigger:{trigger:'#cases',start:'top 60%',end:()=>'+='+(totalDrag+400),scrub:1}});
+},200);
+
+/* ══ ODOMETER COUNT-UP ══ */
+function odometer(el,target,suf=''){
+  gsap.to({n:0},{n:target,duration:2.2,ease:'power2.out',
+    onUpdate:function(){el.textContent=Math.round(this.targets()[0].n)}
+  });
+}
+[{id:'sn0',v:94},{id:'sn1',v:120},{id:'sn2',v:12}].forEach(({id,v})=>{
+  ScrollTrigger.create({trigger:`#${id}`,start:'top 80%',once:true,onEnter:()=>odometer(document.getElementById(id),v)});
+});
+
+/* ══ TESTIMONIALS ══ */
+let tIdx=0;
+const totalT=3;
+function goT(i){
+  tIdx=((i%totalT)+totalT)%totalT;
+  document.getElementById('testi-track').style.transform=`translateX(-${tIdx*100}%)`;
+  document.querySelectorAll('.testi-dot').forEach((d,j)=>d.classList.toggle('on',j===tIdx));
+}
+document.getElementById('t-prev').addEventListener('click',()=>goT(tIdx-1));
+document.getElementById('t-next').addEventListener('click',()=>goT(tIdx+1));
+document.querySelectorAll('.testi-dot').forEach(d=>d.addEventListener('click',()=>goT(+d.dataset.i)));
+setInterval(()=>goT(tIdx+1),5000);
+
+/* ══ TIMELINE DOTS ══ */
+document.querySelectorAll('.tl-item').forEach((item,i)=>{
+  ScrollTrigger.create({trigger:item,start:'top 70%',onEnter:()=>item.querySelector('.tl-dot').classList.add('active')});
+});
+
+/* ══ CTA PARTICLE CANVAS ══ */
+const canvas=document.getElementById('cta-canvas');
+const ctx=canvas.getContext('2d');
+let pts=[];
+function resizeC(){canvas.width=canvas.offsetWidth;canvas.height=canvas.offsetHeight;pts=Array.from({length:80},()=>({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*1.5+.5,vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,o:Math.random()*.5+.1}))}
+resizeC();window.addEventListener('resize',resizeC);
+let cmx=canvas.width/2,cmy=canvas.height/2;
+canvas.addEventListener('mousemove',e=>{const r=canvas.getBoundingClientRect();cmx=e.clientX-r.left;cmy=e.clientY-r.top});
+(function drawC(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  pts.forEach(p=>{
+    const dx=cmx-p.x,dy=cmy-p.y,dist=Math.sqrt(dx*dx+dy*dy);
+    if(dist<120){p.x+=dx*.015;p.y+=dy*.015}
+    p.x+=p.vx;p.y+=p.vy;
+    if(p.x<0||p.x>canvas.width)p.vx*=-1;
+    if(p.y<0||p.y>canvas.height)p.vy*=-1;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(168,157,255,${p.o})`;ctx.fill();
+  });
+  pts.forEach((p,i)=>{pts.forEach((q,j)=>{if(j<=i)return;const d=Math.hypot(p.x-q.x,p.y-q.y);if(d<90){ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.strokeStyle=`rgba(127,91,255,${.15*(1-d/90)})`;ctx.lineWidth=.6;ctx.stroke()}})});
+  requestAnimationFrame(drawC);
+})();
+
+/* ══ SCROLL TRIGGERS — REVEALS ══ */
+// Clip eyebrows
+['#sv-ey','#vl-ey','#st-ey','#tl-ey','#tm-ey'].forEach(id=>{
+  gsap.to(id,{y:'0%',duration:1,ease:'power3.out',scrollTrigger:{trigger:id,start:'top 92%'}});
+});
+// Section headings
+document.querySelectorAll('.s-h2').forEach(el=>{
+  gsap.from(el,{opacity:0,y:30,duration:.9,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 85%'}});
+});
+// Value cards clip-path wipe
+gsap.from('.val-card',{clipPath:'inset(0 0 100% 0)',opacity:0,duration:.9,stagger:.12,ease:'power3.out',scrollTrigger:{trigger:'#val-grid',start:'top 80%'}});
+// Team stagger
+gsap.from('.team-card',{opacity:0,y:40,stagger:.1,duration:.8,ease:'power3.out',scrollTrigger:{trigger:'#team-grid',start:'top 80%'}});
+// Timeline items
+gsap.from('.tl-item',{opacity:0,x:-24,stagger:.15,duration:.8,ease:'power3.out',scrollTrigger:{trigger:'.timeline-track',start:'top 75%'}});
+// Case cards
+gsap.from('.case-card',{opacity:0,y:30,stagger:.1,duration:.7,ease:'power3.out',scrollTrigger:{trigger:'#cases',start:'top 70%'}});
+// Testimonials
+gsap.from('#testi-track',{opacity:0,y:30,duration:.9,ease:'power3.out',scrollTrigger:{trigger:'#testimonials',start:'top 75%'}});
+// Accord items
+gsap.from('.accord-item',{opacity:0,x:-20,stagger:.1,duration:.7,ease:'power3.out',scrollTrigger:{trigger:'#accord-list',start:'top 80%'}});
+// CTA
+gsap.to('.cta-h2 .line-inner',{y:'0%',stagger:.12,duration:1,ease:'power3.out',scrollTrigger:{trigger:'#contact',start:'top 75%'}});
+gsap.from('#cta-sub',{opacity:0,y:20,duration:.7,delay:.4,ease:'power3.out',scrollTrigger:{trigger:'#contact',start:'top 75%'}});
+gsap.from('.cta-actions',{opacity:0,y:20,duration:.7,delay:.6,ease:'power3.out',scrollTrigger:{trigger:'#contact',start:'top 75%'}});
+// Hero parallax bg grid
+gsap.to('.hero-grid',{y:120,ease:'none',scrollTrigger:{trigger:'#hero',start:'top top',end:'bottom top',scrub:true}});
+gsap.to('#scroll-ind',{opacity:0,ease:'none',scrollTrigger:{trigger:'#hero',start:'15% top',end:'35% top',scrub:true}});
+
+/* ══ HERO ENTRANCE ══ */
+const heroTL=gsap.timeline({delay:.1});
+heroTL.to('#hero-tag',{opacity:1,y:0,duration:.7,ease:'power3.out'})
+  .to('.hero-h1 .line-inner',{y:'0%',stagger:.12,duration:1,ease:'power3.out'},'-=.4')
+  .to('#hero-sub',{opacity:1,y:0,duration:.8,ease:'power3.out'},'-=.5')
+  .to('#hero-right',{opacity:1,y:0,duration:.7,ease:'power3.out'},'-=.5')
+  .to('#scroll-ind',{opacity:1,y:0,duration:.5,ease:'power3.out'},'-=.3');
+gsap.set(['#hero-sub','#hero-right','#scroll-ind'],{opacity:0,y:20});
+setTimeout(()=>gsap.to('#scroll-line',{height:48,duration:.8,ease:'power2.out'}),900);
+ScrollTrigger.refresh();
+</script>
+</body>
+</html>
